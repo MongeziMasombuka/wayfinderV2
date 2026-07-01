@@ -42,6 +42,11 @@ async function loadAll() {
     amenities = await ameRes.json();
     events = await evRes.json();
     dataLoaded = true;
+    console.log(
+      "[loadAll] stores loaded:",
+      stores.length,
+      stores.map((s) => s.id),
+    );
     document.getElementById("store-count").textContent =
       stores.length + " stores";
     renderEvents();
@@ -194,7 +199,12 @@ async function startCamera() {
 
   try {
     camStream = await getCameraStream();
+    console.log(
+      "[camera] stream acquired",
+      camStream.getVideoTracks()[0]?.label,
+    );
   } catch (err) {
+    console.error("[camera] failed to acquire stream", err);
     statusEl.textContent = cameraErrorMessage(err);
     return;
   }
@@ -264,6 +274,7 @@ function scanFrame() {
       inversionAttempts: "dontInvert",
     });
   } catch (e) {
+    console.error("jsQR threw:", e);
     return;
   }
   if (!code) return;
@@ -272,9 +283,15 @@ function scanFrame() {
     ? raw.slice(QR_PREFIX.length).trim().toLowerCase()
     : raw.toLowerCase();
   const found = getStore(storeId);
+  console.log("[QR scan]", {
+    raw,
+    parsedStoreId: storeId,
+    matched: !!found,
+    knownStoreIds: stores.map((s) => s.id),
+  });
+  const statusEl = document.getElementById("cam-status");
   if (found) {
-    document.getElementById("cam-status").textContent =
-      `✓ Found: ${found.emoji} ${found.name}`;
+    statusEl.textContent = `✓ Found: ${found.emoji} ${found.name}`;
     stopCamera();
     setTimeout(() => {
       closeCamera();
@@ -285,8 +302,7 @@ function scanFrame() {
       if (fromId && toId) getDirections();
     }, 700);
   } else {
-    document.getElementById("cam-status").textContent =
-      `QR not recognised: "${raw}"`;
+    statusEl.innerHTML = `Raw: "${escapeHtml(raw)}"<br>Parsed ID: "${escapeHtml(storeId)}"<br>No match in ${stores.length} stores`;
   }
 }
 function showToast(msg) {
