@@ -1,0 +1,14 @@
+{
+  "name": "grand-atrium-fixed",
+  "version": "1.0.0",
+  "description": "Grand Atrium wayfinding with correct server startup after DB init",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  }
+}

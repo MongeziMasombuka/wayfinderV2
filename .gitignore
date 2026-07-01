@@ -1,0 +1,98 @@
+# ====================================
+# DEPENDENCIES
+# ====================================
+node_modules/
+jspm_packages/
+web_modules/
+
+# ====================================
+# BUILD OUTPUTS
+# ====================================
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# ====================================
+# LOGS
+# ====================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ====================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ====================================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================================
+# OPERATING SYSTEM FILES
+# ====================================
+.DS_Store
+Thumbs.db
+
+# ====================================
+# IDE / EDITOR FILES
+# ====================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ====================================
+# TESTING / COVERAGE
+# ====================================
+coverage/
+.nyc_output/
+
+# ====================================
+# EXPRESS.JS SPECIFIC
+# ====================================
+# Uploaded files (if using multer)
+uploads/
+temp/
+tmp/
+
+# Session storage (if using file-based sessions)
+sessions/
+*.session
+
+# Database files (if using SQLite)
+*.sqlite
+*.sqlite3
+*.db
+
+# SSL certificates (if using HTTPS locally)
+*.pem
+*.key
+*.crt
+*.cert
+
+# ====================================
+# RENDER DEPLOYMENT SPECIFIC
+# ====================================
+# Render builds in a clean environment
+# These files are not needed for deployment
+
+# PM2 (not needed on Render)
+.pm2/
+pm2.*.log
+
+# Render uses environment variables, not .env files
+# .env files are already ignored above
+
+# ====================================
+# OPTIONAL: Package manager lock files
+# (Uncomment if you want to ignore them)
+# ====================================
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
