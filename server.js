@@ -1,16 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const { Pool } = require('pg');
-const path = require('path');
+require("dotenv").config();
+const express = require("express");
+const { Pool } = require("pg");
+const path = require("path");
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 const pool = new Pool({
-   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
 // ------------------------------
@@ -18,11 +18,13 @@ const pool = new Pool({
 // ------------------------------
 pool.connect(async (err, client, release) => {
   if (err) {
-    console.error('❌ PostgreSQL connection error:', err.message);
-    console.error('Make sure PostgreSQL is running and database "grand_atrium" exists.');
+    console.error("❌ PostgreSQL connection error:", err.message);
+    console.error(
+      'Make sure PostgreSQL is running and database "grand_atrium" exists.',
+    );
     process.exit(1);
   }
-  console.log('✅ Connected to PostgreSQL');
+  console.log("✅ Connected to PostgreSQL");
   release();
 
   // Create tables
@@ -86,7 +88,7 @@ pool.connect(async (err, client, release) => {
   `);
 
   // Seed reference data if empty
-  const floorCount = await pool.query('SELECT COUNT(*) FROM floors');
+  const floorCount = await pool.query("SELECT COUNT(*) FROM floors");
   if (parseInt(floorCount.rows[0].count) === 0) {
     await pool.query(`
       INSERT INTO floors (id, name, description) VALUES
@@ -128,45 +130,250 @@ pool.connect(async (err, client, release) => {
   }
 
   // Seed stores if empty
-  const storeCount = await pool.query('SELECT COUNT(*) FROM stores');
+  const storeCount = await pool.query("SELECT COUNT(*) FROM stores");
   if (parseInt(storeCount.rows[0].count) === 0) {
-    const getCat = async (name) => (await pool.query('SELECT id FROM categories WHERE name = $1', [name])).rows[0].id;
+    const getCat = async (name) =>
+      (await pool.query("SELECT id FROM categories WHERE name = $1", [name]))
+        .rows[0].id;
 
     const storesData = [
-      ['aura', 'Aura Fashion', 'Apparel', 1, 'north', '👗', 'chip-gold', '#FDF8EE', "Trendy women's wear"],
-      ['bloom', 'Bloom & Brew', 'Coffee Shop', 1, 'center', '☕', 'chip-blue', '#EEF4FA', 'Artisan coffee & pastries'],
-      ['tech', 'TechPoint', 'Electronics', 1, 'south', '💻', 'chip-blue', '#EEF4FA', 'Latest gadgets and repairs'],
-      ['zara', 'Zara Home', 'Home & Decor', 1, 'north', '🛋', 'chip-gold', '#FDF8EE', 'Modern home furnishings'],
-      ['sole', 'Sole Society', 'Footwear', 1, 'north', '👟', 'chip-gold', '#FDF8EE', 'Shoes for every occasion'],
-      ['grove', 'The Grove Pharmacy', 'Health & Beauty', 1, 'south', '💊', 'chip-green', '#EEF6F0', 'Wellness products'],
-      ['bites', 'Quick Bites Food Hall', 'Food Court', 1, 'south', '🍜', 'chip-red', '#F9EEEE', 'Asian & Western street food'],
-      ['sports', 'Peak Performance', 'Sports & Fitness', 1, 'east', '🏃', 'chip-blue', '#EEF4FA', 'Activewear & gear'],
-      ['reads', 'Chapter One Books', 'Books & Stationery', 1, 'east', '📚', 'chip-purple', '#F4EEF9', 'Bestsellers & gifts'],
-      ['kids', 'Little Wonders', 'Kids & Toys', 1, 'west', '🧸', 'chip-red', '#F9EEEE', "Toys & children's clothing"],
-      ['atm', 'Grand Atrium Concierge', 'Services', 1, 'center', '🛎', 'chip-purple', '#F4EEF9', 'Information & ticket sales'],
-      ['velvet', 'Velvet Threads', 'Luxury Boutique', 2, 'north', '💎', 'chip-gold', '#FDF8EE', 'Designer collections'],
-      ['pixel', 'Pixel Games', 'Gaming', 2, 'south', '🎮', 'chip-blue', '#EEF4FA', 'Arcade & esports lounge'],
-      ['glass', 'The Glass Onion', 'Fine Dining', 2, 'rooftop', '🍽', 'chip-gold', '#FDF8EE', 'Modern European cuisine'],
-      ['aurora', 'Aurora Spa & Beauty', 'Wellness', 2, 'north', '🧖', 'chip-purple', '#F4EEF9', 'Massage & facials'],
-      ['cinema', 'Lumière Cinema', 'Entertainment', 2, 'south', '🎬', 'chip-red', '#F9EEEE', '4K digital projection'],
-      ['draft', 'Draft & Pour', 'Bar & Lounge', 2, 'east', '🍻', 'chip-red', '#F9EEEE', 'Craft beer & cocktails'],
-      ['studio', 'Studio Art & Framing', 'Art & Gifts', 2, 'east', '🎨', 'chip-purple', '#F4EEF9', 'Local art & custom framing'],
-      ['jewel', 'Crown & Stone', 'Jewellery', 2, 'north', '💍', 'chip-gold', '#FDF8EE', 'Fine jewellery & watches'],
-      ['fit', 'FitFuel Nutrition', 'Health & Nutrition', 2, 'west', '🥤', 'chip-green', '#EEF6F0', 'Smoothies & supplements']
+      [
+        "aura",
+        "Aura Fashion",
+        "Apparel",
+        1,
+        "north",
+        "👗",
+        "chip-gold",
+        "#FDF8EE",
+        "Trendy women's wear",
+      ],
+      [
+        "bloom",
+        "Bloom & Brew",
+        "Coffee Shop",
+        1,
+        "center",
+        "☕",
+        "chip-blue",
+        "#EEF4FA",
+        "Artisan coffee & pastries",
+      ],
+      [
+        "tech",
+        "TechPoint",
+        "Electronics",
+        1,
+        "south",
+        "💻",
+        "chip-blue",
+        "#EEF4FA",
+        "Latest gadgets and repairs",
+      ],
+      [
+        "zara",
+        "Zara Home",
+        "Home & Decor",
+        1,
+        "north",
+        "🛋",
+        "chip-gold",
+        "#FDF8EE",
+        "Modern home furnishings",
+      ],
+      [
+        "sole",
+        "Sole Society",
+        "Footwear",
+        1,
+        "north",
+        "👟",
+        "chip-gold",
+        "#FDF8EE",
+        "Shoes for every occasion",
+      ],
+      [
+        "grove",
+        "The Grove Pharmacy",
+        "Health & Beauty",
+        1,
+        "south",
+        "💊",
+        "chip-green",
+        "#EEF6F0",
+        "Wellness products",
+      ],
+      [
+        "bites",
+        "Quick Bites Food Hall",
+        "Food Court",
+        1,
+        "south",
+        "🍜",
+        "chip-red",
+        "#F9EEEE",
+        "Asian & Western street food",
+      ],
+      [
+        "sports",
+        "Peak Performance",
+        "Sports & Fitness",
+        1,
+        "east",
+        "🏃",
+        "chip-blue",
+        "#EEF4FA",
+        "Activewear & gear",
+      ],
+      [
+        "reads",
+        "Chapter One Books",
+        "Books & Stationery",
+        1,
+        "east",
+        "📚",
+        "chip-purple",
+        "#F4EEF9",
+        "Bestsellers & gifts",
+      ],
+      [
+        "kids",
+        "Little Wonders",
+        "Kids & Toys",
+        1,
+        "west",
+        "🧸",
+        "chip-red",
+        "#F9EEEE",
+        "Toys & children's clothing",
+      ],
+      [
+        "atm",
+        "Grand Atrium Concierge",
+        "Services",
+        1,
+        "center",
+        "🛎",
+        "chip-purple",
+        "#F4EEF9",
+        "Information & ticket sales",
+      ],
+      [
+        "velvet",
+        "Velvet Threads",
+        "Luxury Boutique",
+        2,
+        "north",
+        "💎",
+        "chip-gold",
+        "#FDF8EE",
+        "Designer collections",
+      ],
+      [
+        "pixel",
+        "Pixel Games",
+        "Gaming",
+        2,
+        "south",
+        "🎮",
+        "chip-blue",
+        "#EEF4FA",
+        "Arcade & esports lounge",
+      ],
+      [
+        "glass",
+        "The Glass Onion",
+        "Fine Dining",
+        2,
+        "rooftop",
+        "🍽",
+        "chip-gold",
+        "#FDF8EE",
+        "Modern European cuisine",
+      ],
+      [
+        "aurora",
+        "Aurora Spa & Beauty",
+        "Wellness",
+        2,
+        "north",
+        "🧖",
+        "chip-purple",
+        "#F4EEF9",
+        "Massage & facials",
+      ],
+      [
+        "cinema",
+        "Lumière Cinema",
+        "Entertainment",
+        2,
+        "south",
+        "🎬",
+        "chip-red",
+        "#F9EEEE",
+        "4K digital projection",
+      ],
+      [
+        "draft",
+        "Draft & Pour",
+        "Bar & Lounge",
+        2,
+        "east",
+        "🍻",
+        "chip-red",
+        "#F9EEEE",
+        "Craft beer & cocktails",
+      ],
+      [
+        "studio",
+        "Studio Art & Framing",
+        "Art & Gifts",
+        2,
+        "east",
+        "🎨",
+        "chip-purple",
+        "#F4EEF9",
+        "Local art & custom framing",
+      ],
+      [
+        "jewel",
+        "Crown & Stone",
+        "Jewellery",
+        2,
+        "north",
+        "💍",
+        "chip-gold",
+        "#FDF8EE",
+        "Fine jewellery & watches",
+      ],
+      [
+        "fit",
+        "FitFuel Nutrition",
+        "Health & Nutrition",
+        2,
+        "west",
+        "🥤",
+        "chip-green",
+        "#EEF6F0",
+        "Smoothies & supplements",
+      ],
     ];
 
     for (const s of storesData) {
       const catId = await getCat(s[2]);
-      await pool.query(`
+      await pool.query(
+        `
         INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [s[0], s[1], catId, s[3], s[4], s[5], s[6], s[7], s[8]]);
+      `,
+        [s[0], s[1], catId, s[3], s[4], s[5], s[6], s[7], s[8]],
+      );
     }
-    console.log('✅ Stores seeded');
+    console.log("✅ Stores seeded");
   }
 
   // Seed amenities if empty
-  const amenityCount = await pool.query('SELECT COUNT(*) FROM amenities');
+  const amenityCount = await pool.query("SELECT COUNT(*) FROM amenities");
   if (parseInt(amenityCount.rows[0].count) === 0) {
     await pool.query(`
       INSERT INTO amenities (name, icon, wing_id, level_id, description) VALUES
@@ -177,29 +384,33 @@ pool.connect(async (err, client, release) => {
       ('Nursing Room', '🍼', 'west', 1, 'Next to Little Wonders'),
       ('Prayer Room', '🕌', 'east', 2, 'Silent area near Studio Art');
     `);
-    console.log('✅ Amenities seeded');
+    console.log("✅ Amenities seeded");
   }
 
   // Seed events if empty
-  const eventCount = await pool.query('SELECT COUNT(*) FROM events');
+  const eventCount = await pool.query("SELECT COUNT(*) FROM events");
   if (parseInt(eventCount.rows[0].count) === 0) {
     const now = new Date();
-    const nextWeek = new Date(); nextWeek.setDate(now.getDate() + 7);
-    await pool.query(`
+    const nextWeek = new Date();
+    nextWeek.setDate(now.getDate() + 7);
+    await pool.query(
+      `
       INSERT INTO events (title, description, start_date, end_date, store_id, wing_id) VALUES
       ('Live Piano', 'Classical piano at the fountain', $1, $2, NULL, 'center'),
       ('Tech Workshop', 'Learn coding with TechPoint', $1, $2, 'tech', NULL),
       ('Wine Tasting', 'Sample fine wines at The Glass Onion', $1, $2, 'glass', NULL);
-    `, [now, nextWeek]);
-    console.log('✅ Events seeded');
+    `,
+      [now, nextWeek],
+    );
+    console.log("✅ Events seeded");
   }
 
-  console.log('✅ Database fully initialised');
+  console.log("✅ Database fully initialised");
 
   // ------------------------------
   // API endpoints (same as before)
   // ------------------------------
-  app.get('/api/stores', async (req, res) => {
+  app.get("/api/stores", async (req, res) => {
     try {
       const result = await pool.query(`
         SELECT s.*, c.name as category_name, c.icon as category_icon, c.color_class,
@@ -211,15 +422,16 @@ pool.connect(async (err, client, release) => {
         ORDER BY f.id, w.name, s.name
       `);
       res.json(result.rows);
-      
-    } catch (err) { 
-      console.error('❌ /api/stores error:', err); 
-      res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      console.error("❌ /api/stores error:", err);
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/stores/:id', async (req, res) => {
+  app.get("/api/stores/:id", async (req, res) => {
     try {
-      const result = await pool.query(`
+      const result = await pool.query(
+        `
         SELECT s.*, c.name as category_name, c.icon as category_icon, c.color_class,
                f.name as level_name, w.name as wing_name
         FROM stores s
@@ -227,48 +439,108 @@ pool.connect(async (err, client, release) => {
         JOIN floors f ON s.level_id = f.id
         JOIN wings w ON s.wing_id = w.id
         WHERE s.id = $1
-      `, [req.params.id]);
-      if (result.rows.length === 0) return res.status(404).json({ error: 'Store not found' });
+      `,
+        [req.params.id],
+      );
+      if (result.rows.length === 0)
+        return res.status(404).json({ error: "Store not found" });
       res.json(result.rows[0]);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.post('/api/stores', async (req, res) => {
-    const { id, name, category_id, level_id, wing_id, emoji, cc, ibg, description } = req.body;
+  app.post("/api/stores", async (req, res) => {
+    const {
+      id,
+      name,
+      category_id,
+      level_id,
+      wing_id,
+      emoji,
+      cc,
+      ibg,
+      description,
+    } = req.body;
     if (!id || !name || !category_id || !level_id || !wing_id || !emoji) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
     try {
-      await pool.query(`
+      await pool.query(
+        `
         INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [id, name, category_id, level_id, wing_id, emoji, cc || '', ibg || '#FFFFFF', description || '']);
+      `,
+        [
+          id,
+          name,
+          category_id,
+          level_id,
+          wing_id,
+          emoji,
+          cc || "",
+          ibg || "#FFFFFF",
+          description || "",
+        ],
+      );
       res.status(201).json({ id });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.put('/api/stores/:id', async (req, res) => {
-    const { name, category_id, level_id, wing_id, emoji, cc, ibg, description } = req.body;
+  app.put("/api/stores/:id", async (req, res) => {
+    const {
+      name,
+      category_id,
+      level_id,
+      wing_id,
+      emoji,
+      cc,
+      ibg,
+      description,
+    } = req.body;
     try {
-      const result = await pool.query(`
+      const result = await pool.query(
+        `
         UPDATE stores
         SET name=$1, category_id=$2, level_id=$3, wing_id=$4, emoji=$5, cc=$6, ibg=$7, description=$8
         WHERE id=$9
-      `, [name, category_id, level_id, wing_id, emoji, cc, ibg, description, req.params.id]);
-      if (result.rowCount === 0) return res.status(404).json({ error: 'Store not found' });
+      `,
+        [
+          name,
+          category_id,
+          level_id,
+          wing_id,
+          emoji,
+          cc,
+          ibg,
+          description,
+          req.params.id,
+        ],
+      );
+      if (result.rowCount === 0)
+        return res.status(404).json({ error: "Store not found" });
       res.json({ updated: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.delete('/api/stores/:id', async (req, res) => {
+  app.delete("/api/stores/:id", async (req, res) => {
     try {
-      const result = await pool.query('DELETE FROM stores WHERE id = $1', [req.params.id]);
-      if (result.rowCount === 0) return res.status(404).json({ error: 'Store not found' });
+      const result = await pool.query("DELETE FROM stores WHERE id = $1", [
+        req.params.id,
+      ]);
+      if (result.rowCount === 0)
+        return res.status(404).json({ error: "Store not found" });
       res.json({ deleted: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/wings', async (req, res) => {
+  app.get("/api/wings", async (req, res) => {
     try {
       const result = await pool.query(`
         SELECT w.*, f.name as level_name
@@ -277,17 +549,21 @@ pool.connect(async (err, client, release) => {
         ORDER BY f.id, w.name
       `);
       res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/categories', async (req, res) => {
+  app.get("/api/categories", async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM categories ORDER BY name');
+      const result = await pool.query("SELECT * FROM categories ORDER BY name");
       res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/amenities', async (req, res) => {
+  app.get("/api/amenities", async (req, res) => {
     try {
       const result = await pool.query(`
         SELECT a.*, w.name as wing_name, f.name as level_name
@@ -297,29 +573,140 @@ pool.connect(async (err, client, release) => {
         ORDER BY f.id, w.name, a.name
       `);
       res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/events', async (req, res) => {
+  // GET /api/events
+  // By default only returns events that haven't ended yet (for the public
+  // wayfinding page). Pass ?all=1 to get everything, past included — the
+  // admin panel uses this so past/expired events don't just disappear
+  // from the list.
+  app.get("/api/events", async (req, res) => {
     try {
+      const includeAll = req.query.all === "1";
       const now = new Date();
-      const result = await pool.query(`
+      const result = await pool.query(
+        `
         SELECT e.*, s.name as store_name, w.name as wing_name
         FROM events e
         LEFT JOIN stores s ON e.store_id = s.id
         LEFT JOIN wings w ON e.wing_id = w.id
-        WHERE e.end_date >= $1
+        ${includeAll ? "" : "WHERE e.end_date >= $1"}
         ORDER BY e.start_date
-      `, [now]);
+      `,
+        includeAll ? [] : [now],
+      );
       res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/events", async (req, res) => {
+    const {
+      title,
+      description,
+      start_date,
+      end_date,
+      store_id,
+      wing_id,
+      image_url,
+    } = req.body;
+    if (!title || !start_date || !end_date) {
+      return res
+        .status(400)
+        .json({
+          error: "Missing required fields: title, start_date, end_date",
+        });
+    }
+    try {
+      const result = await pool.query(
+        `
+        INSERT INTO events (title, description, start_date, end_date, store_id, wing_id, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+      `,
+        [
+          title,
+          description || null,
+          start_date,
+          end_date,
+          store_id || null,
+          wing_id || null,
+          image_url || null,
+        ],
+      );
+      res.status(201).json({ id: result.rows[0].id });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put("/api/events/:id", async (req, res) => {
+    const {
+      title,
+      description,
+      start_date,
+      end_date,
+      store_id,
+      wing_id,
+      image_url,
+    } = req.body;
+    if (!title || !start_date || !end_date) {
+      return res
+        .status(400)
+        .json({
+          error: "Missing required fields: title, start_date, end_date",
+        });
+    }
+    try {
+      const result = await pool.query(
+        `
+        UPDATE events
+        SET title=$1, description=$2, start_date=$3, end_date=$4, store_id=$5, wing_id=$6, image_url=$7
+        WHERE id=$8
+      `,
+        [
+          title,
+          description || null,
+          start_date,
+          end_date,
+          store_id || null,
+          wing_id || null,
+          image_url || null,
+          req.params.id,
+        ],
+      );
+      if (result.rowCount === 0)
+        return res.status(404).json({ error: "Event not found" });
+      res.json({ updated: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/events/:id", async (req, res) => {
+    try {
+      const result = await pool.query("DELETE FROM events WHERE id = $1", [
+        req.params.id,
+      ]);
+      if (result.rowCount === 0)
+        return res.status(404).json({ error: "Event not found" });
+      res.json({ deleted: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // ------------------------------
   // START SERVER only after DB is fully ready
   // ------------------------------
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 Grand Atrium Full Backend running at http://localhost:${PORT}`);
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(
+      `\n🚀 Grand Atrium Full Backend running at http://localhost:${PORT}`,
+    );
     console.log(`📱 Access from other devices: http://<YOUR_IP>:${PORT}`);
     console.log(`🛠️  Admin panel: http://localhost:${PORT}/admin.html\n`);
   });

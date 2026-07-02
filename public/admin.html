@@ -136,21 +136,55 @@
       </div>
       <div id="events-tab" class="tab-content">
         <div class="card">
+          <h3>Add / Edit Event</h3>
+          <form id="eventForm">
+            <div class="form-grid">
+              <input
+                type="text"
+                id="event_title"
+                placeholder="Title"
+                required
+              /><input
+                type="text"
+                id="event_description"
+                placeholder="Description"
+              /><input type="date" id="event_start" required /><input
+                type="date"
+                id="event_end"
+                required
+              /><select id="event_target">
+                <option value="">Mall-wide</option></select
+              ><input
+                type="text"
+                id="event_image"
+                placeholder="Image URL (optional)"
+              />
+            </div>
+            <button type="submit">Save Event</button
+            ><button type="button" id="cancelEventEdit" style="display: none">
+              Cancel
+            </button>
+          </form>
+        </div>
+        <div class="card">
           <h3>Current Events</h3>
-          <table id="eventsTable">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Store/Wing</th>
-                <th>Dates</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <div style="overflow-x: auto">
+            <table id="eventsTable">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Store/Wing</th>
+                  <th>Dates</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-   <script src="/js/admin.js"></script>
+    <script src="/js/admin.js"></script>
   </body>
 </html>
