@@ -67,24 +67,6 @@ pool.connect(async (err, client, release) => {
       description TEXT,
       coordinates JSONB
     );
-    CREATE TABLE IF NOT EXISTS events (
-      id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      start_date TIMESTAMP NOT NULL,
-      end_date TIMESTAMP NOT NULL,
-      store_id TEXT REFERENCES stores(id),
-      wing_id TEXT REFERENCES wings(id),
-      image_url TEXT
-    );
-    CREATE TABLE IF NOT EXISTS opening_hours (
-      store_id TEXT REFERENCES stores(id) ON DELETE CASCADE,
-      day_of_week INT CHECK (day_of_week BETWEEN 0 AND 6),
-      open_time TIME,
-      close_time TIME,
-      is_closed BOOLEAN DEFAULT FALSE,
-      PRIMARY KEY (store_id, day_of_week)
-    );
   `);
 
   // Seed reference data if empty
@@ -362,10 +344,8 @@ pool.connect(async (err, client, release) => {
     for (const s of storesData) {
       const catId = await getCat(s[2]);
       await pool.query(
-        `
-        INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `,
+        `INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [s[0], s[1], catId, s[3], s[4], s[5], s[6], s[7], s[8]],
       );
     }
@@ -387,28 +367,10 @@ pool.connect(async (err, client, release) => {
     console.log("✅ Amenities seeded");
   }
 
-  // Seed events if empty
-  const eventCount = await pool.query("SELECT COUNT(*) FROM events");
-  if (parseInt(eventCount.rows[0].count) === 0) {
-    const now = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(now.getDate() + 7);
-    await pool.query(
-      `
-      INSERT INTO events (title, description, start_date, end_date, store_id, wing_id) VALUES
-      ('Live Piano', 'Classical piano at the fountain', $1, $2, NULL, 'center'),
-      ('Tech Workshop', 'Learn coding with TechPoint', $1, $2, 'tech', NULL),
-      ('Wine Tasting', 'Sample fine wines at The Glass Onion', $1, $2, 'glass', NULL);
-    `,
-      [now, nextWeek],
-    );
-    console.log("✅ Events seeded");
-  }
-
   console.log("✅ Database fully initialised");
 
   // ------------------------------
-  // API endpoints (same as before)
+  // API endpoints
   // ------------------------------
   app.get("/api/stores", async (req, res) => {
     try {
@@ -431,15 +393,13 @@ pool.connect(async (err, client, release) => {
   app.get("/api/stores/:id", async (req, res) => {
     try {
       const result = await pool.query(
-        `
-        SELECT s.*, c.name as category_name, c.icon as category_icon, c.color_class,
-               f.name as level_name, w.name as wing_name
-        FROM stores s
-        JOIN categories c ON s.category_id = c.id
-        JOIN floors f ON s.level_id = f.id
-        JOIN wings w ON s.wing_id = w.id
-        WHERE s.id = $1
-      `,
+        `SELECT s.*, c.name as category_name, c.icon as category_icon, c.color_class,
+                f.name as level_name, w.name as wing_name
+         FROM stores s
+         JOIN categories c ON s.category_id = c.id
+         JOIN floors f ON s.level_id = f.id
+         JOIN wings w ON s.wing_id = w.id
+         WHERE s.id = $1`,
         [req.params.id],
       );
       if (result.rows.length === 0)
@@ -467,10 +427,8 @@ pool.connect(async (err, client, release) => {
     }
     try {
       await pool.query(
-        `
-        INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `,
+        `INSERT INTO stores (id, name, category_id, level_id, wing_id, emoji, cc, ibg, description)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           id,
           name,
@@ -502,11 +460,9 @@ pool.connect(async (err, client, release) => {
     } = req.body;
     try {
       const result = await pool.query(
-        `
-        UPDATE stores
-        SET name=$1, category_id=$2, level_id=$3, wing_id=$4, emoji=$5, cc=$6, ibg=$7, description=$8
-        WHERE id=$9
-      `,
+        `UPDATE stores
+         SET name=$1, category_id=$2, level_id=$3, wing_id=$4, emoji=$5, cc=$6, ibg=$7, description=$8
+         WHERE id=$9`,
         [
           name,
           category_id,
@@ -578,134 +534,12 @@ pool.connect(async (err, client, release) => {
     }
   });
 
-  // GET /api/events
-  // By default only returns events that haven't ended yet (for the public
-  // wayfinding page). Pass ?all=1 to get everything, past included — the
-  // admin panel uses this so past/expired events don't just disappear
-  // from the list.
-  app.get("/api/events", async (req, res) => {
-    try {
-      const includeAll = req.query.all === "1";
-      const now = new Date();
-      const result = await pool.query(
-        `
-        SELECT e.*, s.name as store_name, w.name as wing_name
-        FROM events e
-        LEFT JOIN stores s ON e.store_id = s.id
-        LEFT JOIN wings w ON e.wing_id = w.id
-        ${includeAll ? "" : "WHERE e.end_date >= $1"}
-        ORDER BY e.start_date
-      `,
-        includeAll ? [] : [now],
-      );
-      res.json(result.rows);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.post("/api/events", async (req, res) => {
-    const {
-      title,
-      description,
-      start_date,
-      end_date,
-      store_id,
-      wing_id,
-      image_url,
-    } = req.body;
-    if (!title || !start_date || !end_date) {
-      return res
-        .status(400)
-        .json({
-          error: "Missing required fields: title, start_date, end_date",
-        });
-    }
-    try {
-      const result = await pool.query(
-        `
-        INSERT INTO events (title, description, start_date, end_date, store_id, wing_id, image_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id
-      `,
-        [
-          title,
-          description || null,
-          start_date,
-          end_date,
-          store_id || null,
-          wing_id || null,
-          image_url || null,
-        ],
-      );
-      res.status(201).json({ id: result.rows[0].id });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.put("/api/events/:id", async (req, res) => {
-    const {
-      title,
-      description,
-      start_date,
-      end_date,
-      store_id,
-      wing_id,
-      image_url,
-    } = req.body;
-    if (!title || !start_date || !end_date) {
-      return res
-        .status(400)
-        .json({
-          error: "Missing required fields: title, start_date, end_date",
-        });
-    }
-    try {
-      const result = await pool.query(
-        `
-        UPDATE events
-        SET title=$1, description=$2, start_date=$3, end_date=$4, store_id=$5, wing_id=$6, image_url=$7
-        WHERE id=$8
-      `,
-        [
-          title,
-          description || null,
-          start_date,
-          end_date,
-          store_id || null,
-          wing_id || null,
-          image_url || null,
-          req.params.id,
-        ],
-      );
-      if (result.rowCount === 0)
-        return res.status(404).json({ error: "Event not found" });
-      res.json({ updated: true });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.delete("/api/events/:id", async (req, res) => {
-    try {
-      const result = await pool.query("DELETE FROM events WHERE id = $1", [
-        req.params.id,
-      ]);
-      if (result.rowCount === 0)
-        return res.status(404).json({ error: "Event not found" });
-      res.json({ deleted: true });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   // ------------------------------
-  // START SERVER only after DB is fully ready
+  // START SERVER
   // ------------------------------
   app.listen(PORT, "0.0.0.0", () => {
     console.log(
-      `\n🚀 Grand Atrium Full Backend running at http://localhost:${PORT}`,
+      `\n🚀 Grand Atrium Backend running at http://localhost:${PORT}`,
     );
     console.log(`📱 Access from other devices: http://<YOUR_IP>:${PORT}`);
     console.log(`🛠️  Admin panel: http://localhost:${PORT}/admin.html\n`);

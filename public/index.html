@@ -13,7 +13,6 @@
     />
     <link rel="stylesheet" href="/css/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   </head>
   <body>
     <header class="header">
@@ -65,23 +64,12 @@
       <button class="go-btn" id="go-btn" disabled onclick="getDirections()">
         Show Directions →
       </button>
+
+      <!-- Directions will be rendered here -->
       <div id="result-area"></div>
-      <div class="section-label">📅 Today's Events</div>
-      <div id="events-area" class="event-scroll">Loading...</div>
-      <div class="section-label">🛎 Amenities</div>
-      <div id="amenities-area" class="amenity-grid">Loading...</div>
-      <div class="section-label">All Stores</div>
-      <div class="filter-bar" id="filter-bar"></div>
-      <div class="dir-card" id="all-stores"></div>
-      <div class="info-bar">
-        <div class="info-chip"><span>🏧</span>ATM · Center Court</div>
-        <div class="info-chip"><span>♿</span>Fully Accessible</div>
-        <div class="info-chip"><span>📶</span>Free Wi-Fi</div>
-        <div class="info-chip"><span>🅿</span>Parking B1–B3</div>
-        <div class="info-chip"><span>🚻</span>Restrooms L1 & L2</div>
-        <div class="info-chip"><span>🔋</span>Charging Stations</div>
-      </div>
     </div>
+
+    <!-- Store Selection Sheet -->
     <div class="overlay" id="overlay" onclick="closeSheet()">
       <div class="sheet" onclick="event.stopPropagation()">
         <div class="sheet-bar">
@@ -92,11 +80,14 @@
             placeholder=""
             oninput="filterSheet()"
             autocomplete="off"
-          /><button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+          />
+          <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
         </div>
         <div class="sheet-list" id="sheet-list"></div>
       </div>
     </div>
+
+    <!-- Camera Scanner Overlay -->
     <div class="cam-overlay" id="cam-overlay">
       <div class="cam-header">
         <div class="cam-title">Scan Store QR Code</div>
@@ -109,8 +100,8 @@
           autoplay
           muted
           playsinline
-        ></video
-        ><canvas class="cam-canvas" id="cam-canvas"></canvas>
+        ></video>
+        <canvas class="cam-canvas" id="cam-canvas"></canvas>
         <div class="cam-frame">
           <div class="cam-frame-b"></div>
           <div class="cam-scan-line"></div>
@@ -136,23 +127,7 @@
         </div>
       </div>
     </div>
-    <div class="qr-modal" id="qr-modal" onclick="closeQrModal()">
-      <div class="qr-box" onclick="event.stopPropagation()">
-        <div class="qr-box-top">
-          <div class="qr-store-info">
-            <div class="qr-emoji" id="qr-modal-emoji"></div>
-            <div class="qr-name" id="qr-modal-name"></div>
-            <div class="qr-meta" id="qr-modal-meta"></div>
-            <div class="qr-id" id="qr-modal-id"></div>
-          </div>
-          <button class="qr-close-btn" onclick="closeQrModal()">✕</button>
-        </div>
-        <div class="qr-code-wrap" id="qr-code-wrap"></div>
-        <button class="qr-nav-btn" onclick="navigateFromQrModal()">
-          Navigate Here →
-        </button>
-      </div>
-    </div>
+
     <div class="toast" id="toast"></div>
     <script src="/js/app.js"></script>
   </body>

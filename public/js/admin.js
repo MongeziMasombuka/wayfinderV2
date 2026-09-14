@@ -1,31 +1,26 @@
+const QR_PREFIX = "GRAND_ATRIUM:";
 let stores = [],
   categories = [],
   wings = [],
-  amenities = [],
-  events = [];
+  amenities = [];
 let editStoreId = null;
-let editEventId = null;
 
 async function fetchAll() {
-  const [sRes, cRes, wRes, aRes, eRes] = await Promise.all([
+  const [sRes, cRes, wRes, aRes] = await Promise.all([
     fetch("/api/stores"),
     fetch("/api/categories"),
     fetch("/api/wings"),
     fetch("/api/amenities"),
-    fetch("/api/events?all=1"), // admin sees past events too, not just upcoming
   ]);
   stores = await sRes.json();
   categories = await cRes.json();
   wings = await wRes.json();
   amenities = await aRes.json();
-  events = await eRes.json();
   populateSelects();
-  populateEventTargetSelect();
   renderStores();
   renderCategories();
   renderWings();
   renderAmenities();
-  renderEvents();
 }
 
 function populateSelects() {
@@ -43,20 +38,6 @@ function populateSelects() {
       .join("");
 }
 
-// Single dropdown for "what is this event tied to": a specific store, a
-// wing, or nothing (mall-wide). Encodes the choice as "store:<id>" /
-// "wing:<id>" so the submit handler can split it back into store_id/wing_id.
-function populateEventTargetSelect() {
-  const sel = document.getElementById("event_target");
-  const storeOptions = stores
-    .map((s) => `<option value="store:${s.id}">🏬 ${s.name}</option>`)
-    .join("");
-  const wingOptions = wings
-    .map((w) => `<option value="wing:${w.id}">🧭 ${w.name}</option>`)
-    .join("");
-  sel.innerHTML = `<option value="">Mall-wide</option>${storeOptions}${wingOptions}`;
-}
-
 function renderStores() {
   const searchTerm = document.getElementById("searchStore").value.toLowerCase();
   const filtered = stores.filter(
@@ -68,7 +49,7 @@ function renderStores() {
   tbody.innerHTML = filtered
     .map(
       (s) =>
-        `<tr><td>${escapeHtml(s.id)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.category_name)}</td><td>${s.level_id}</td><td>${escapeHtml(s.wing_name)}</td><td>${s.emoji}</td><td class="actions"><button class="edit-btn" onclick="editStore('${s.id}')">Edit</button><button class="delete-btn" onclick="deleteStore('${s.id}')">Delete</button></td></tr>`,
+        `<tr><td>${escapeHtml(s.id)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.category_name)}</td><td>${s.level_id}</td><td>${escapeHtml(s.wing_name)}</td><td>${s.emoji}</td><td class="actions"><button class="qr-btn" onclick="showQrModal('${s.id}')">QR</button><button class="edit-btn" onclick="editStore('${s.id}')">Edit</button><button class="delete-btn" onclick="deleteStore('${s.id}')">Delete</button></td></tr>`,
     )
     .join("");
 }
@@ -100,15 +81,6 @@ function renderAmenities() {
     .join("");
 }
 
-function renderEvents() {
-  document.querySelector("#eventsTable tbody").innerHTML = events
-    .map(
-      (e) =>
-        `<tr><td>${escapeHtml(e.title)}</td><td>${escapeHtml(e.description || "")}</td><td>${escapeHtml(e.store_name || e.wing_name || "Mall-wide")}</td><td>${new Date(e.start_date).toLocaleDateString()} - ${new Date(e.end_date).toLocaleDateString()}</td><td class="actions"><button class="edit-btn" onclick="editEvent(${e.id})">Edit</button><button class="delete-btn" onclick="deleteEvent(${e.id})">Delete</button></td></tr>`,
-    )
-    .join("");
-}
-
 function showTab(tab) {
   document
     .querySelectorAll(".tab-content")
@@ -120,8 +92,37 @@ function showTab(tab) {
   event.target.classList.add("active");
 }
 
-// --- Stores ---
+// --- QR Code Modal ---
+function showQrModal(id) {
+  const s = stores.find((x) => x.id === id);
+  if (!s) return;
 
+  document.getElementById("qr-modal-emoji").textContent = s.emoji;
+  document.getElementById("qr-modal-name").textContent = s.name;
+  document.getElementById("qr-modal-meta").textContent =
+    `Level ${s.level_id} · ${s.wing_name}`;
+  document.getElementById("qr-modal-id").textContent = `ID: ${s.id}`;
+
+  const wrap = document.getElementById("qr-code-wrap");
+  wrap.innerHTML = "";
+
+  new QRCode(wrap, {
+    text: QR_PREFIX + s.id,
+    width: 180,
+    height: 180,
+    colorDark: "#1A1612",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+
+  document.getElementById("qr-modal").classList.add("open");
+}
+
+function closeQrModal() {
+  document.getElementById("qr-modal").classList.remove("open");
+}
+
+// --- Stores CRUD ---
 document.getElementById("storeForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const payload = {
@@ -180,86 +181,6 @@ async function deleteStore(id) {
 }
 
 document.getElementById("searchStore").addEventListener("input", renderStores);
-
-// --- Events ---
-
-document.getElementById("eventForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const targetVal = document.getElementById("event_target").value;
-  let store_id = null,
-    wing_id = null;
-  if (targetVal.startsWith("store:")) store_id = targetVal.slice(6);
-  else if (targetVal.startsWith("wing:")) wing_id = targetVal.slice(5);
-
-  const payload = {
-    title: document.getElementById("event_title").value.trim(),
-    description: document.getElementById("event_description").value.trim(),
-    start_date: document.getElementById("event_start").value,
-    end_date: document.getElementById("event_end").value,
-    store_id,
-    wing_id,
-    image_url: document.getElementById("event_image").value.trim() || null,
-  };
-
-  if (new Date(payload.end_date) < new Date(payload.start_date)) {
-    alert("End date can't be before start date");
-    return;
-  }
-
-  const url = editEventId ? `/api/events/${editEventId}` : "/api/events";
-  const method = editEventId ? "PUT" : "POST";
-  const res = await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (res.ok) {
-    alert("Saved");
-    window.location.reload();
-  } else {
-    const body = await res.json().catch(() => ({}));
-    alert(`Error saving event${body.error ? `: ${body.error}` : ""}`);
-  }
-});
-
-function editEvent(id) {
-  const ev = events.find((x) => x.id === id);
-  if (!ev) return;
-  editEventId = id;
-  document.getElementById("event_title").value = ev.title;
-  document.getElementById("event_description").value = ev.description || "";
-  document.getElementById("event_start").value = toDateInputValue(
-    ev.start_date,
-  );
-  document.getElementById("event_end").value = toDateInputValue(ev.end_date);
-  document.getElementById("event_target").value = ev.store_id
-    ? `store:${ev.store_id}`
-    : ev.wing_id
-      ? `wing:${ev.wing_id}`
-      : "";
-  document.getElementById("event_image").value = ev.image_url || "";
-  document.getElementById("cancelEventEdit").style.display = "inline-block";
-}
-
-document.getElementById("cancelEventEdit").addEventListener("click", () => {
-  editEventId = null;
-  document.getElementById("eventForm").reset();
-  document.getElementById("cancelEventEdit").style.display = "none";
-});
-
-async function deleteEvent(id) {
-  if (confirm("Delete event?")) {
-    await fetch(`/api/events/${id}`, { method: "DELETE" });
-    window.location.reload();
-  }
-}
-
-// Postgres returns full timestamps (e.g. "2026-07-09T00:00:00.000Z");
-// <input type="date"> needs just the "YYYY-MM-DD" portion.
-function toDateInputValue(value) {
-  if (!value) return "";
-  return String(value).slice(0, 10);
-}
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>]/g, function (m) {

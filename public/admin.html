@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin - Grand Atrium Full</title>
+    <title>Admin - Grand Atrium</title>
     <link rel="stylesheet" href="/css/admin.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -13,7 +14,6 @@
         <div class="tab" onclick="showTab('categories')">Categories</div>
         <div class="tab" onclick="showTab('wings')">Wings</div>
         <div class="tab" onclick="showTab('amenities')">Amenities</div>
-        <div class="tab" onclick="showTab('events')">Events</div>
       </div>
       <div id="stores-tab" class="tab-content active">
         <div class="card">
@@ -25,35 +25,34 @@
                 id="store_id"
                 placeholder="Store ID"
                 required
-              /><input
+              />
+              <input
                 type="text"
                 id="store_name"
                 placeholder="Store Name"
                 required
-              /><select id="category_id" required>
-                <option value="">Category</option></select
-              ><select id="level_id" required>
+              />
+              <select id="category_id" required>
+                <option value="">Category</option>
+              </select>
+              <select id="level_id" required>
                 <option value="1">Level 1</option>
-                <option value="2">Level 2</option></select
-              ><select id="wing_id" required>
-                <option value="">Wing</option></select
-              ><input
-                type="text"
-                id="emoji"
-                placeholder="Emoji"
-                required
-              /><input type="text" id="cc" placeholder="Chip class" /><input
-                type="color"
-                id="ibg"
-                value="#FDF8EE"
-              /><input
+                <option value="2">Level 2</option>
+              </select>
+              <select id="wing_id" required>
+                <option value="">Wing</option>
+              </select>
+              <input type="text" id="emoji" placeholder="Emoji" required />
+              <input type="text" id="cc" placeholder="Chip class" />
+              <input type="color" id="ibg" value="#FDF8EE" />
+              <input
                 type="text"
                 id="store_description"
                 placeholder="Description"
               />
             </div>
-            <button type="submit">Save Store</button
-            ><button type="button" id="cancelStoreEdit" style="display: none">
+            <button type="submit">Save Store</button>
+            <button type="button" id="cancelStoreEdit" style="display: none">
               Cancel
             </button>
           </form>
@@ -134,57 +133,24 @@
           </table>
         </div>
       </div>
-      <div id="events-tab" class="tab-content">
-        <div class="card">
-          <h3>Add / Edit Event</h3>
-          <form id="eventForm">
-            <div class="form-grid">
-              <input
-                type="text"
-                id="event_title"
-                placeholder="Title"
-                required
-              /><input
-                type="text"
-                id="event_description"
-                placeholder="Description"
-              /><input type="date" id="event_start" required /><input
-                type="date"
-                id="event_end"
-                required
-              /><select id="event_target">
-                <option value="">Mall-wide</option></select
-              ><input
-                type="text"
-                id="event_image"
-                placeholder="Image URL (optional)"
-              />
-            </div>
-            <button type="submit">Save Event</button
-            ><button type="button" id="cancelEventEdit" style="display: none">
-              Cancel
-            </button>
-          </form>
-        </div>
-        <div class="card">
-          <h3>Current Events</h3>
-          <div style="overflow-x: auto">
-            <table id="eventsTable">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Description</th>
-                  <th>Store/Wing</th>
-                  <th>Dates</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="qr-modal" id="qr-modal" onclick="closeQrModal()">
+      <div class="qr-box" onclick="event.stopPropagation()">
+        <div class="qr-box-top">
+          <div class="qr-store-info">
+            <div class="qr-emoji" id="qr-modal-emoji"></div>
+            <div class="qr-name" id="qr-modal-name"></div>
+            <div class="qr-meta" id="qr-modal-meta"></div>
+            <div class="qr-id" id="qr-modal-id"></div>
           </div>
+          <button class="qr-close-btn" onclick="closeQrModal()">✕</button>
         </div>
+        <div class="qr-code-wrap" id="qr-code-wrap"></div>
       </div>
     </div>
+
     <script src="/js/admin.js"></script>
   </body>
 </html>
